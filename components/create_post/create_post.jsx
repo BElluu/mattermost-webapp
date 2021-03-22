@@ -607,7 +607,7 @@ class CreatePost extends React.PureComponent {
             currentChannelMembersCount > Constants.NOTIFY_ALL_MEMBERS &&
             !notContainsAtChannel) {
             memberNotifyCount = currentChannelMembersCount - 1;
-            mentions = ['@all', '@channel'];
+            mentions = ['@all', '@channel', '@here'];
             if (this.props.isTimezoneEnabled) {
                 const {data} = await this.props.actions.getChannelTimezones(this.props.currentChannel.id);
                 channelTimezoneCount = data ? data.length : 0;
@@ -1259,8 +1259,42 @@ class CreatePost extends React.PureComponent {
         const {formatMessage} = this.props.intl;
         const {renderScrollbar, channelTimezoneCount, mentions, memberNotifyCount} = this.state;
         const ariaLabelMessageInput = Utils.localizeMessage('accessibility.sections.centerFooter', 'message input complimentary region');
+        const notifyPeopleMessage = 'You are about to notify **{totalMembers} people**. Are you sure?';
+        const notifyPeopleWithTimezoneMessage = 'You are about to notify **{totalMembers} people** in **{timezones, timezones}. Are you sure?';
         let notifyAllMessage = '';
         let notifyAllTitle = '';
+        let notifyHereMessage = '';
+
+        if (mentions.includes('@here')){
+            notifyAllTitle = (
+                <FormattedMessage
+                    id='notify_here.title.confirm'
+                    defaultMessage='Confirm sending notifications to entire channel'
+                />
+            );
+            if(channelTimezoneCount > 0){
+                notifyHereMessage = (
+                    <FormattedMarkdownMessage
+                        id='notify_here.question_timezone'
+                        defaultMessage='You are about to notify up to **{totalMembers} people** in **{timezones, timezones}. Are you sure?'
+                        values={{
+                            totalMembers: memberNotifyCount,
+                            timezones: channelTimezoneCount,
+                        }}
+                    />
+                );
+            } else {
+                notifyHereMessage = (
+                    <FormattedMarkdownMessage
+                        id='notify_here.question'
+                        defaultMessage='You are about to notify **{totalMembers} people**. Are you sure?'
+                        values={{
+                            totalMembers: memberNotifyCount,
+                        }}
+                    />
+                );
+            }
+
         if (mentions.includes('@all') || mentions.includes('@channel')) {
             notifyAllTitle = (
                 <FormattedMessage
@@ -1272,7 +1306,7 @@ class CreatePost extends React.PureComponent {
                 notifyAllMessage = (
                     <FormattedMarkdownMessage
                         id='notify_all.question_timezone'
-                        defaultMessage='By using **@all** or **@channel** you are about to send notifications to **{totalMembers} people** in **{timezones, number} {timezones, plural, one {timezone} other {timezones}}**. Are you sure you want to do this?'
+                        defaultMessage='You are about to notify **{totalMembers} people** in **{timezones, timezones}. Are you sure?'
                         values={{
                             totalMembers: memberNotifyCount,
                             timezones: channelTimezoneCount,
@@ -1283,7 +1317,7 @@ class CreatePost extends React.PureComponent {
                 notifyAllMessage = (
                     <FormattedMarkdownMessage
                         id='notify_all.question'
-                        defaultMessage='By using **@all** or **@channel** you are about to send notifications to **{totalMembers} people**. Are you sure you want to do this?'
+                        defaultMessage='You are about to notify **{totalMembers} people**. Are you sure?'
                         values={{
                             totalMembers: memberNotifyCount,
                         }}
@@ -1303,9 +1337,8 @@ class CreatePost extends React.PureComponent {
                     notifyAllMessage = (
                         <FormattedMarkdownMessage
                             id='notify_all.question_timezone_one_group'
-                            defaultMessage='By using **{mention}** you are about to send notifications to **{totalMembers} people** in **{timezones, number} {timezones, plural, one {timezone} other {timezones}}**. Are you sure you want to do this?'
+                            defaultMessage='You are about to notify **{totalMembers} people** in **{timezones, timezones}. Are you sure?'
                             values={{
-                                mention: mentions[0],
                                 totalMembers: memberNotifyCount,
                                 timezones: channelTimezoneCount,
                             }}
@@ -1315,9 +1348,8 @@ class CreatePost extends React.PureComponent {
                     notifyAllMessage = (
                         <FormattedMarkdownMessage
                             id='notify_all.question_one_group'
-                            defaultMessage='By using **{mention}** you are about to send notifications to **{totalMembers} people**. Are you sure you want to do this?'
+                            defaultMessage='You are about to notify **{totalMembers} people**. Are you sure?'
                             values={{
-                                mention: mentions[0],
                                 totalMembers: memberNotifyCount,
                             }}
                         />
@@ -1327,10 +1359,8 @@ class CreatePost extends React.PureComponent {
                 notifyAllMessage = (
                     <FormattedMarkdownMessage
                         id='notify_all.question_timezone_groups'
-                        defaultMessage='By using **{mentions}** and **{finalMention}** you are about to send notifications to at least **{totalMembers} people** in **{timezones, number} {timezones, plural, one {timezone} other {timezones}}**. Are you sure you want to do this?'
+                        defaultMessage='You are about to notify **{totalMembers} people** in **{timezones, timezones}. Are you sure?'
                         values={{
-                            mentions: mentions.slice(0, -1).join(', '),
-                            finalMention: mentions[mentions.length - 1],
                             totalMembers: memberNotifyCount,
                             timezones: channelTimezoneCount,
                         }}
@@ -1340,10 +1370,8 @@ class CreatePost extends React.PureComponent {
                 notifyAllMessage = (
                     <FormattedMarkdownMessage
                         id='notify_all.question_groups'
-                        defaultMessage='By using **{mentions}** and **{finalMention}** you are about to send notifications to at least **{totalMembers} people**. Are you sure you want to do this?'
+                        defaultMessage='You are about to notify **{totalMembers} people**. Are you sure?'
                         values={{
-                            mentions: mentions.slice(0, -1).join(', '),
-                            finalMention: mentions[mentions.length - 1],
                             totalMembers: memberNotifyCount,
                         }}
                     />
